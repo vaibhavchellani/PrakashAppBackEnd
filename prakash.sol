@@ -14,7 +14,7 @@ contract Prakash{
     mapping(uint256 => complaint)public complaints;
     uint256 public latestComplaintNumber=0;
     
-    function addComplaint(
+    function addComplaint (
         address _user,
         string _desc,
         string _name,
