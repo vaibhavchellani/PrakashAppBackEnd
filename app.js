@@ -3,12 +3,13 @@ var app = express();
 var bodyParser = require('body-parser');
 var cors = require('cors');
 var Web3 = require('web3');
+var Tx = require('ethereumjs-tx');
+
 if (typeof web3 !== 'undefined') {
     web3 = new Web3(web3.currentProvider);
 }else {
-    web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:7545"));
+    web3 = new Web3(new Web3.providers.HttpProvider("https://ropsten.infura.io/TJSJL5u9maRXnaZrSvnv"));
 }
-web3.eth.defaultAccount = web3.eth.accounts[0];
 var ContractABI = web3.eth.contract([
 	{
 		"constant": false,
@@ -131,36 +132,37 @@ app.get('/', function(req, res){
    res.send("Hello world!");
 });
 app.get('/complain/:public/:desc/:name/:phone/:problem/:private',function(req,res){
-    console.log(res.params.public);
-    //RegisterComplaint(res);
-    res.send("oh yeah");
+    //console.log(req.params.public);
+    console.log(req);
+    RegisterComplaint(req);
+    //res.send("oh yeah");
 
 });
 
 
 
-function RegisterComplaint(res){
-    console.log(res.client.params);
+function RegisterComplaint(req){
+    console.log(req);
     var gasPrice = web3.eth.gasPrice;
     var gasPriceHex = web3.toHex(gasPrice);
     var gasLimitHex = web3.toHex(300000);
-    var nonce =  web3.eth.getTransactionCount(res.params.public) ;
+    var nonce =  web3.eth.getTransactionCount(req.params.public) ;
 
 
     var rawTransaction = {
-        "from": res.params.public,
+        "from": req.params.public,
         "nonce": web3.toHex(nonce),
         "gasLimit": gasLimitHex,
         "gasPrice": gasPriceHex,
         "to": ContractAddress,
         "value": "0x0",
-        "data": ContractInstance.addComplaint.getData(res.params.public,res.params.desc,res.params.name,res.params.phone,res.params.problem,{from: publickey}),
+        "data": ContractInstance.addComplaint.getData(req.params.public,req.params.desc,req.params.name,req.params.phone,req.params.problem,{from: req.params.public}),
         "chainId": 0x03
     };
 
     var tx = new Tx(rawTransaction);
 
-    tx.sign(new Buffer(res.params.private, 'hex'));
+    tx.sign(new Buffer(req.params.private, 'hex'));
 
     var serializedTx = tx.serialize();
 
