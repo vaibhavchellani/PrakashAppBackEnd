@@ -1,8 +1,10 @@
 var Web3 = require('web3');
+var Tx = require('ethereumjs-tx');
+var ContractAddress='0xeb3d71cbf09ed84ed2026dd6d5cf1badaa71d1d9';
 if (typeof web3 !== 'undefined') {
     web3 = new Web3(web3.currentProvider);
 }else {
-    web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:7545"));
+    web3 = new Web3(new Web3.providers.HttpProvider("https://ropsten.infura.io/TJSJL5u9maRXnaZrSvnv"));
 }
 web3.eth.defaultAccount = web3.eth.accounts[0];
 var ContractABI = web3.eth.contract([
@@ -114,14 +116,43 @@ var ContractABI = web3.eth.contract([
 ]);
 
 
-var ContractInstance= ContractABI.at('0x8cdaf0cd259887258bc13a92c0a6da92698644c0');
-// ContractInstance.addComplaint("0x627306090abaB3A6e1400e9345bC60c78a8BEf57","dsds","dsdssds",434343,"sdsds",function(err,res){
-//     if(!err)
-//         console.log(res);
-//     else
-//         console.log(err);
-// })
+var ContractInstance= ContractABI.at(ContractAddress);
+
+var privatekey = 'cf39d15b3f9bb5e776a97060f81ad6ea949459c0fb9e412f2cf61f2ee99e1153';
+var publickey = '0x579B5D46470b501D9Aa3765B00ac86C07B5c5fB7';
+
+var gasPrice = web3.eth.gasPrice;
+    var gasPriceHex = web3.toHex(gasPrice);
+    var gasLimitHex = web3.toHex(300000);
+    var nonce =  web3.eth.getTransactionCount(publickey) ;
+
+
+    var rawTransaction = {
+        "from": publickey,
+        "nonce": web3.toHex(nonce),
+        "gasLimit": gasLimitHex,
+        "gasPrice": gasPriceHex,
+        "to": ContractAddress,
+        "value": "0x0",
+        "data": ContractInstance.addComplaint.getData("0x627306090abaB3A6e1400e9345bC60c78a8BEf57","dsds","dsdssds",434343,"sdsds",{from: publickey}),
+        "chainId": 0x03
+    };
+
+    var tx = new Tx(rawTransaction);
+
+    tx.sign(new Buffer(privatekey, 'hex'));
+
+    var serializedTx = tx.serialize();
+
+    web3.eth.sendRawTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
+        if (err) {
+            console.log(err);
+            return;
+        }
+        console.log('Transaction hash: ' + hash);
+    });
+
 ContractInstance.latestComplaintNumber(function(err,res){
-    console.log(err+res);
+    console.log(res);
 })
 

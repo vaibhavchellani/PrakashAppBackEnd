@@ -116,8 +116,9 @@ var ContractABI = web3.eth.contract([
 		"type": "function"
 	}
 ]);
+var ContractAddress='0xeb3d71cbf09ed84ed2026dd6d5cf1badaa71d1d9';
 
-var ContractInstance= ContractABI.at('0x8cdaf0cd259887258bc13a92c0a6da92698644c0');
+var ContractInstance= ContractABI.at(ContractAddress);
 
 
 app.use(cors());
@@ -130,15 +131,46 @@ app.get('/', function(req, res){
    res.send("Hello world!");
 });
 app.get('/complain/:public/:desc/:name/:phone/:problem/:private',function(req,res){
-    
-var ContractInstance= ContractABI.at('0x8cdaf0cd259887258bc13a92c0a6da92698644c0');
-ContractInstance.addComplaint("0x627306090abaB3A6e1400e9345bC60c78a8BEf57","dsds","dsdssds",434343,"sdsds",function(err,res){
-    if(!err)
-        console.log(res);
-    else
-        console.log(err);
-})
+    console.log(res.params.public);
+    //RegisterComplaint(res);
     res.send("oh yeah");
 
-})
+});
+
+
+
+function RegisterComplaint(res){
+    console.log(res.client.params);
+    var gasPrice = web3.eth.gasPrice;
+    var gasPriceHex = web3.toHex(gasPrice);
+    var gasLimitHex = web3.toHex(300000);
+    var nonce =  web3.eth.getTransactionCount(res.params.public) ;
+
+
+    var rawTransaction = {
+        "from": res.params.public,
+        "nonce": web3.toHex(nonce),
+        "gasLimit": gasLimitHex,
+        "gasPrice": gasPriceHex,
+        "to": ContractAddress,
+        "value": "0x0",
+        "data": ContractInstance.addComplaint.getData(res.params.public,res.params.desc,res.params.name,res.params.phone,res.params.problem,{from: publickey}),
+        "chainId": 0x03
+    };
+
+    var tx = new Tx(rawTransaction);
+
+    tx.sign(new Buffer(res.params.private, 'hex'));
+
+    var serializedTx = tx.serialize();
+
+    web3.eth.sendRawTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
+        if (err) {
+            console.log(err);
+            return;
+        }
+        console.log('Transaction hash: ' + hash);
+    });
+
+}
 app.listen(3000);
