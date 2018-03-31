@@ -134,10 +134,62 @@ app.get('/', function(req, res){
 app.get('/complain/:public/:desc/:name/:phone/:problem/:private',function(req,res){
     //console.log(req.params.public);
     console.log(req);
-    RegisterComplaint(req);
+    var txHash=RegisterComplaint(req);
+    res.send(txHash);
     //res.send("oh yeah");
 
 });
+app.get('/latestComplaint', function(req,res){
+    ContractInstance.latestComplaintNumber(function(err,result){
+        console.log(res);
+        res.send(result);
+    })
+});
+app.get('/changeStatus/:id/:status/:public/:private',function(res,req){
+    var txHash=ChangeStatus(req.params.id,req.params.status,req.params.public,req.params.private);
+    res.send(res);
+});
+app.get('/getComplaint/:id',function(req,res){
+    ContractInstance.complaints(req.params.id,function(err,result){
+        if(!err)
+            res.send(result);
+        else
+            console.log(err);
+    })
+});
+function ChangeStatus(id,status,private,public){
+    var gasPrice = web3.eth.gasPrice;
+    var gasPriceHex = web3.toHex(gasPrice);
+    var gasLimitHex = web3.toHex(300000);
+    var nonce =  web3.eth.getTransactionCount(public) ;
+
+
+    var rawTransaction = {
+        "from": public,
+        "nonce": web3.toHex(nonce),
+        "gasLimit": gasLimitHex,
+        "gasPrice": gasPriceHex,
+        "to": ContractAddress,
+        "value": "0x0",
+        "data": ContractInstance.ChangeStatus.getData(id,status,{from: public}),
+        "chainId": 0x03
+    };
+
+    var tx = new Tx(rawTransaction);
+
+    tx.sign(new Buffer(private, 'hex'));
+
+    var serializedTx = tx.serialize();
+
+    web3.eth.sendRawTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
+        if (err) {
+            console.log(err);
+            return;
+        }
+        console.log('Transaction hash: ' + hash);
+        return hash;
+    });
+}
 
 
 
@@ -172,6 +224,7 @@ function RegisterComplaint(req){
             return;
         }
         console.log('Transaction hash: ' + hash);
+        return hash;
     });
 
 }
