@@ -133,7 +133,6 @@ app.get('/', function(req, res){
 });
 app.get('/complain/:public/:desc/:name/:phone/:problem/:private',function(req,res){
     //console.log(req.params.public);
-    console.log(req);
     var txHash=RegisterComplaint(req);
     res.send(txHash);
     //res.send("oh yeah");
@@ -141,13 +140,14 @@ app.get('/complain/:public/:desc/:name/:phone/:problem/:private',function(req,re
 });
 app.get('/latestComplaint', function(req,res){
     ContractInstance.latestComplaintNumber(function(err,result){
-        console.log(res);
+        console.log(result);
         res.send(result);
     })
 });
-app.get('/changeStatus/:id/:status/:public/:private',function(res,req){
+app.get('/changeStatus/:id/:status/:public/:private',function(req,res){
+    console.log(req.params);
     var txHash=ChangeStatus(req.params.id,req.params.status,req.params.public,req.params.private);
-    res.send(res);
+    res.send(txHash);
 });
 app.get('/getComplaint/:id',function(req,res){
     ContractInstance.complaints(req.params.id,function(err,result){
@@ -157,7 +157,7 @@ app.get('/getComplaint/:id',function(req,res){
             console.log(err);
     })
 });
-function ChangeStatus(id,status,private,public){
+function ChangeStatus(id,status,public,private){
     var gasPrice = web3.eth.gasPrice;
     var gasPriceHex = web3.toHex(gasPrice);
     var gasLimitHex = web3.toHex(300000);
@@ -171,7 +171,7 @@ function ChangeStatus(id,status,private,public){
         "gasPrice": gasPriceHex,
         "to": ContractAddress,
         "value": "0x0",
-        "data": ContractInstance.ChangeStatus.getData(id,status,{from: public}),
+        "data": ContractInstance.changeStatus.getData(id,status,{from: public}),
         "chainId": 0x03
     };
 
