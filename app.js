@@ -1,3 +1,5 @@
+//http://localhost:3000/complain/0x579B5D46470b501D9Aa3765B00ac86C07B5c5fB7/dsdsd/dsdsd/77777/ass/cf39d15b3f9bb5e776a97060f81ad6ea949459c0fb9e412f2cf61f2ee99e1153
+// http://localhost:3000/changeStatus/5/2/0x579B5D46470b501D9Aa3765B00ac86C07B5c5fB7/cf39d15b3f9bb5e776a97060f81ad6ea949459c0fb9e412f2cf61f2ee99e1153
 var express = require('express');
 var app = express();
 var bodyParser = require('body-parser');
@@ -133,8 +135,7 @@ app.get('/', function(req, res){
 });
 app.get('/complain/:public/:desc/:name/:phone/:problem/:private',function(req,res){
     //console.log(req.params.public);
-    var txHash=RegisterComplaint(req);
-    res.send(txHash);
+	RegisterComplaint(req,res);
     //res.send("oh yeah");
 
 });
@@ -146,8 +147,8 @@ app.get('/latestComplaint', function(req,res){
 });
 app.get('/changeStatus/:id/:status/:public/:private',function(req,res){
     console.log(req.params);
-    var txHash=ChangeStatus(req.params.id,req.params.status,req.params.public,req.params.private);
-    res.send(txHash);
+    ChangeStatus(req.params.id,req.params.status,req.params.public,req.params.private);
+    
 });
 app.get('/getComplaint/:id',function(req,res){
     ContractInstance.complaints(req.params.id,function(err,result){
@@ -157,7 +158,18 @@ app.get('/getComplaint/:id',function(req,res){
             console.log(err);
     })
 });
-function ChangeStatus(id,status,public,private){
+app.get('/getbalance/:public',function(req,res){
+	web3.eth.getBalance(req.params.public.toString(),function(err,result){
+		if(!err){
+			res.send(result.toString());
+		}
+		else{
+			console.log(err);
+		}
+	})
+	
+});
+function ChangeStatus(id,status,public,private,res){
     var gasPrice = web3.eth.gasPrice;
     var gasPriceHex = web3.toHex(gasPrice);
     var gasLimitHex = web3.toHex(300000);
@@ -186,15 +198,16 @@ function ChangeStatus(id,status,public,private){
             console.log(err);
             return;
         }
-        console.log('Transaction hash: ' + hash);
-        return hash;
+		console.log('Transaction hash: ' + hash);
+		res.send(hash);
+		
+		
     });
 }
 
 
 
-function RegisterComplaint(req){
-    console.log(req);
+function RegisterComplaint(req,res){
     var gasPrice = web3.eth.gasPrice;
     var gasPriceHex = web3.toHex(gasPrice);
     var gasLimitHex = web3.toHex(300000);
@@ -223,7 +236,9 @@ function RegisterComplaint(req){
             console.log(err);
             return;
         }
-        console.log('Transaction hash: ' + hash);
+		console.log('Transaction hash: ' + hash);
+		res.send(hash);
+
         return hash;
     });
 
