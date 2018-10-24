@@ -14,6 +14,28 @@ if (typeof web3 !== 'undefined') {
 }
 var ContractABI = web3.eth.contract([
 	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"name": "backer",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"name": "amount",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"name": "isContribution",
+				"type": "bool"
+			}
+		],
+		"name": "FundTransfer",
+		"type": "event"
+	},
+	{
 		"constant": false,
 		"inputs": [
 			{
@@ -47,6 +69,20 @@ var ContractABI = web3.eth.contract([
 		"constant": false,
 		"inputs": [
 			{
+				"name": "city",
+				"type": "uint256"
+			}
+		],
+		"name": "addDonation",
+		"outputs": [],
+		"payable": true,
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
 				"name": "_id",
 				"type": "uint256"
 			},
@@ -59,6 +95,119 @@ var ContractABI = web3.eth.contract([
 		"outputs": [],
 		"payable": false,
 		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [],
+		"name": "stopFunding",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "amt",
+				"type": "uint256"
+			}
+		],
+		"name": "Withdrawal",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"name": "beneficiary1",
+				"type": "address"
+			},
+			{
+				"name": "beneficiary2",
+				"type": "address"
+			},
+			{
+				"name": "beneficiary3",
+				"type": "address"
+			}
+		],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "amountRaised",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "balanceOf",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "beneficiaries",
+		"outputs": [
+			{
+				"name": "",
+				"type": "address"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "cityContribution",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
 		"type": "function"
 	},
 	{
@@ -107,6 +256,20 @@ var ContractABI = web3.eth.contract([
 	{
 		"constant": true,
 		"inputs": [],
+		"name": "crowdfundClosed",
+		"outputs": [
+			{
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
 		"name": "latestComplaintNumber",
 		"outputs": [
 			{
@@ -117,9 +280,24 @@ var ContractABI = web3.eth.contract([
 		"payable": false,
 		"stateMutability": "view",
 		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "withdrawableAmount",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
 	}
-]);
-var ContractAddress='0xeb3d71cbf09ed84ed2026dd6d5cf1badaa71d1d9';
+]
+	);
+var ContractAddress='0x07d47c0e09ab55ef5ffc19ed6089c0839aa8b44e';
 
 var ContractInstance= ContractABI.at(ContractAddress);
 
@@ -145,11 +323,56 @@ app.get('/latestComplaint', function(req,res){
         res.send(result);
     })
 });
+app.get('/crowdFundingClosed', function(req,res){
+    ContractInstance.crowdfundClosed(function(err,result){
+        console.log(result);
+        res.send(result);
+    })
+});
+
+
+app.get('/withdrawableAmount', function(req,res){
+    ContractInstance.withdrawableAmount(function(err,result){
+        console.log(result);
+        res.send(result);
+    })
+});
+
+
+
+app.get('/amountRaised', function(req,res){
+    ContractInstance.amountRaised(function(err,result){
+        console.log(result);
+        res.send(result);
+    })
+});
+
 app.get('/changeStatus/:id/:status/:public/:private',function(req,res){
     console.log(req.params);
     ChangeStatus(req.params.id,req.params.status,req.params.public,req.params.private);
     
 });
+
+app.get('/addDonation/:city/:amount/:public/:private',function(req,res){
+    console.log(req.params);
+    AddDonation(req.params.city,req.params.amount,req.params.public,req.params.private);
+    
+});
+
+app.get('/withdraw/:amount/:public/:private',function(req,res){
+    console.log(req.params);
+    WithDraw(req.params.amount,req.params.public,req.params.private);
+    
+});
+
+
+app.get('/stopFunding/:public/:private',function(req,res){
+    console.log(req.params);
+    StopFunding(req.params.public,req.params.private);
+    
+});
+
+
 app.get('/getComplaint/:id',function(req,res){
     ContractInstance.complaints(req.params.id,function(err,result){
         if(!err)
@@ -158,6 +381,35 @@ app.get('/getComplaint/:id',function(req,res){
             console.log(err);
     })
 });
+
+app.get('/balanceOf/:public',function(req,res){
+    ContractInstance.balanceOf(req.params.public,function(err,result){
+        if(!err)
+            res.send(result);
+        else
+            console.log(err);
+    })
+});
+
+app.get('/cityContribution/:city',function(req,res){
+    ContractInstance.cityContribution(req.params.city,function(err,result){
+        if(!err)
+            res.send(result);
+        else
+            console.log(err);
+    })
+});
+
+app.get('/stringToBytes32/:city',function(req,res){
+    ContractInstance.stringToBytes32(req.params.city,function(err,result){
+        if(!err)
+            res.send(result);
+        else
+            console.log(err);
+    })
+});
+
+
 app.get('/getbalance/:public',function(req,res){
 	web3.eth.getBalance(req.params.public.toString(),function(err,result){
 		if(!err){
@@ -169,6 +421,124 @@ app.get('/getbalance/:public',function(req,res){
 	})
 	
 });
+
+function AddDonation(city, amount, public, private, res) {
+ var gasPrice = web3.eth.gasPrice;
+ var gasPriceHex = web3.toHex(gasPrice);
+ var gasLimitHex = web3.toHex(300000);
+ var nonce = web3.eth.getTransactionCount(public);
+ console.log(typeof parseInt(amount));
+ var amt = web3.toWei(parseInt(amount));
+
+ var rawTransaction = {
+   from: public,
+   nonce: web3.toHex(nonce),
+   gasLimit: gasLimitHex,
+   gasPrice: gasPriceHex,
+   to: ContractAddress,
+   value: amt,
+   data: ContractInstance.addDonation.getData(city, { from: public }),
+   chainId: 0x03
+ };
+
+ var tx = new Tx(rawTransaction);
+
+ tx.sign(new Buffer(private, "hex"));
+
+ var serializedTx = tx.serialize();
+
+ web3.eth.sendRawTransaction("0x" + serializedTx.toString("hex"), function(
+   err,
+   hash
+ ) {
+   if (err) {
+     console.log(err);
+     return;
+   }
+   console.log("Transaction hash: " + hash);
+   res.send(hash);
+ });
+}
+
+
+function StopFunding(public,private,res){
+    var gasPrice = web3.eth.gasPrice;
+    var gasPriceHex = web3.toHex(gasPrice);
+    var gasLimitHex = web3.toHex(300000);
+    var nonce =  web3.eth.getTransactionCount(public) ;
+
+
+    var rawTransaction = {
+        "from": public,
+        "nonce": web3.toHex(nonce),
+        "gasLimit": gasLimitHex,
+        "gasPrice": gasPriceHex,
+        "to": ContractAddress,
+        "value": "0x0",
+        "data": ContractInstance.stopFunding.getData({from: public}),
+        "chainId": 0x03
+    };
+
+    var tx = new Tx(rawTransaction);
+
+    tx.sign(new Buffer(private, 'hex'));
+
+    var serializedTx = tx.serialize();
+
+    web3.eth.sendRawTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
+        if (err) {
+            console.log(err);
+            return;
+        }
+		console.log('Transaction hash: ' + hash);
+		res.send(hash);
+		
+		
+    });
+}
+
+
+function WithDraw( amount, public, private, res) {
+	var gasPrice = web3.eth.gasPrice;
+	var gasPriceHex = web3.toHex(gasPrice);
+	var gasLimitHex = web3.toHex(300000);
+	var nonce = web3.eth.getTransactionCount(public);
+	console.log(typeof parseInt(amount));
+	var amt = web3.toWei(parseInt(amount));
+   
+	var rawTransaction = {
+	  from: public,
+	  nonce: web3.toHex(nonce),
+	  gasLimit: gasLimitHex,
+	  gasPrice: gasPriceHex,
+	  to: ContractAddress,
+	  value: "0x0",
+	  data: ContractInstance.WithDrawal.getData(amt,{from: public}),
+	  chainId: 0x03
+	};
+   
+	var tx = new Tx(rawTransaction);
+   
+	tx.sign(new Buffer(private, "hex"));
+   
+	var serializedTx = tx.serialize();
+   
+	web3.eth.sendRawTransaction("0x" + serializedTx.toString("hex"), function(
+	  err,
+	  hash
+	) {
+	  if (err) {
+		console.log(err);
+		return;
+	  }
+	  console.log("Transaction hash: " + hash);
+	  res.send(hash);
+	});
+   }
+   
+
+
+
 function ChangeStatus(id,status,public,private,res){
     var gasPrice = web3.eth.gasPrice;
     var gasPriceHex = web3.toHex(gasPrice);
