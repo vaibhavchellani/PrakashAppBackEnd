@@ -400,15 +400,6 @@ app.get('/cityContribution/:city',function(req,res){
     })
 });
 
-app.get('/stringToBytes32/:city',function(req,res){
-    ContractInstance.stringToBytes32(req.params.city,function(err,result){
-        if(!err)
-            res.send(result);
-        else
-            console.log(err);
-    })
-});
-
 
 app.get('/getbalance/:public',function(req,res){
 	web3.eth.getBalance(req.params.public.toString(),function(err,result){
@@ -427,9 +418,9 @@ function AddDonation(city, amount, public, private, res) {
  var gasPriceHex = web3.toHex(gasPrice);
  var gasLimitHex = web3.toHex(300000);
  var nonce = web3.eth.getTransactionCount(public);
- console.log(typeof parseInt(amount));
- var amt = web3.toWei(parseInt(amount));
-
+ console.log( parseInt(amount));
+ var amt = (amount);
+ 
  var rawTransaction = {
    from: public,
    nonce: web3.toHex(nonce),
@@ -504,7 +495,7 @@ function WithDraw( amount, public, private, res) {
 	var gasLimitHex = web3.toHex(300000);
 	var nonce = web3.eth.getTransactionCount(public);
 	console.log(typeof parseInt(amount));
-	var amt = web3.toWei(parseInt(amount));
+	var amt =(amount);
    
 	var rawTransaction = {
 	  from: public,
