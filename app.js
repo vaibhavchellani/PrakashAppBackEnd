@@ -419,7 +419,7 @@ function AddDonation(city, amount, public, private, res) {
  var gasLimitHex = web3.toHex(300000);
  var nonce = web3.eth.getTransactionCount(public);
  console.log( parseInt(amount));
- var amt = (amount);
+ var amt = (parseInt(amount));
  
  var rawTransaction = {
    from: public,
